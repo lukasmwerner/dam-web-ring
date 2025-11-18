@@ -1,6 +1,6 @@
 # dam-web-ring
 
-I wanted to have a similar web-ring manager to grantlemon's web ring manager,
+I wanted to have a similar web-ring manager to [grantlemons' web ring manager](https://github.com/grantlemons/webring-manager),
 so I wrote my own, gleam style.
 
 To join the web ring please add the following links to your website:
