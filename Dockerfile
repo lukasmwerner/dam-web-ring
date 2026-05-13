@@ -1,5 +1,5 @@
 FROM erlang:27 AS build
-COPY --from=ghcr.io/gleam-lang/gleam:v1.13.0-erlang /bin/gleam /bin/gleam
+COPY --from=ghcr.io/gleam-lang/gleam:v1.16.0-erlang /bin/gleam /bin/gleam
 COPY . /app/
 
 WORKDIR /app/

@@ -5,6 +5,7 @@ import gleam/dict.{type Dict}
 import gleam/http/request.{type Request}
 import gleam/http/response.{type Response}
 import gleam/list
+import gleam/otp/static_supervisor as supervisor
 import gleam/string
 import mist.{type Connection, type ResponseData}
 import redirect.{redirect}
@@ -14,26 +15,33 @@ pub fn start_server(indexes: Dict(String, Int), domains: Dict(Int, String)) {
     response.new(404)
     |> response.set_body(mist.Bytes(bytes_tree.new()))
 
-  fn(req: Request(Connection)) -> Response(ResponseData) {
-    case request.path_segments(req) {
-      ["list"] -> display(domains)
-      ["prev"] ->
-        { current_page.index(req, indexes) - 1 }
-        |> domain_list.from_index(domains)
-        |> redirect
+  let server =
+    fn(req: Request(Connection)) -> Response(ResponseData) {
+      case request.path_segments(req) {
+        ["list"] -> display(domains)
+        ["prev"] ->
+          { current_page.index(req, indexes) - 1 }
+          |> domain_list.from_index(domains)
+          |> redirect
 
-      ["next"] ->
-        { current_page.index(req, indexes) + 1 }
-        |> domain_list.from_index(domains)
-        |> redirect
+        ["next"] ->
+          { current_page.index(req, indexes) + 1 }
+          |> domain_list.from_index(domains)
+          |> redirect
 
-      _ -> not_found
+        _ -> not_found
+      }
     }
-  }
-  |> mist.new
-  |> mist.bind("0.0.0.0")
-  |> mist.port(3000)
-  |> mist.start
+    |> mist.new
+    |> mist.bind("0.0.0.0")
+    |> mist.port(3000)
+    |> mist.supervised
+
+  let assert Ok(_) =
+    supervisor.new(strategy: supervisor.OneForOne)
+    |> supervisor.restart_tolerance(intensity: 100, period: 60)
+    |> supervisor.add(server)
+    |> supervisor.start
 }
 
 fn display(domains: Dict(Int, String)) -> Response(ResponseData) {
