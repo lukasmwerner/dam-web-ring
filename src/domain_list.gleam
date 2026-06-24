@@ -13,7 +13,7 @@ pub fn from_index(index: Int, domains: Dict(Int, String)) -> String {
   }
   case domains |> dict.get(new_index) {
     Ok(domain) -> domain
-    Error(_) -> "https://lukaswerner.com"
+    Error(_) -> ""
   }
 }
 

@@ -11,6 +11,11 @@ import mist.{type Connection, type ResponseData}
 import redirect.{redirect}
 
 pub fn start_server(indexes: Dict(String, Int), domains: Dict(Int, String)) {
+  let not_in_ring =
+    response.new(404)
+    |> response.set_body(
+      mist.Bytes(bytes_tree.from_string("Site not in Webring.")),
+    )
   let not_found =
     response.new(404)
     |> response.set_body(mist.Bytes(bytes_tree.new()))
@@ -19,15 +24,26 @@ pub fn start_server(indexes: Dict(String, Int), domains: Dict(Int, String)) {
     fn(req: Request(Connection)) -> Response(ResponseData) {
       case request.path_segments(req) {
         ["list"] -> display(domains)
-        ["prev"] ->
-          { current_page.index(req, indexes) - 1 }
-          |> domain_list.from_index(domains)
-          |> redirect
+        ["prev"] -> {
+          let domain =
+            { current_page.index(req, indexes) - 1 }
+            |> domain_list.from_index(domains)
+          case domain != "" {
+            True -> redirect(domain)
+            False -> not_in_ring
+          }
+        }
 
-        ["next"] ->
-          { current_page.index(req, indexes) + 1 }
-          |> domain_list.from_index(domains)
-          |> redirect
+        ["next"] -> {
+          let domain =
+            { current_page.index(req, indexes) + 1 }
+            |> domain_list.from_index(domains)
+
+          case domain != "" {
+            True -> redirect(domain)
+            False -> not_in_ring
+          }
+        }
 
         _ -> not_found
       }
