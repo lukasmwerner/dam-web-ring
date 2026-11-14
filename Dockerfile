@@ -1,5 +1,5 @@
-FROM erlang:27 AS build
-COPY --from=ghcr.io/gleam-lang/gleam:v1.16.0-erlang /bin/gleam /bin/gleam
+FROM erlang:29 AS build
+COPY --from=ghcr.io/gleam-lang/gleam:v1.19.2-erlang /bin/gleam /bin/gleam
 COPY . /app/
 
 WORKDIR /app/
@@ -7,11 +7,9 @@ RUN gleam build
 RUN gleam export erlang-shipment
 WORKDIR /
 
-FROM erlang:27
+FROM erlang:29-alpine
 
-RUN \
-  addgroup --system webapp && \
-  adduser --system webapp --ingroup webapp
+RUN addgroup -S webapp && adduser -S -G webapp webapp
 
 USER webapp
 
